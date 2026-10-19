@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="작은 승리">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>작은 승리 기록</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Do+Hyeon&display=swap">
+<style>
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+/* Layout: one narrow column — today's one task, done list, action counter, a week of stacked blocks */
+:root{
+  --bg:#eef0f3; --card:#ffffff; --ink:#1d2433; --muted:#667085; --line:#d8dce4;
+  --accent:#c8862a; --accent-soft:#f5e6cf; --brick:#3b5a8c; --ok:#2f7d5b;
+  --display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",-apple-system,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161f;--card:#1b2130;--ink:#e8ebf2;--muted:#98a2b6;--line:#2c3446;
+  --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161f;--card:#1b2130;--ink:#e8ebf2;--muted:#98a2b6;--line:#2c3446;
+  --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h1{font-family:var(--display);font-weight:400;font-size:30px;margin:0;letter-spacing:.5px}
+.date{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+.row{display:flex;gap:8px;align-items:center}
+input[type=text],input[type=number]{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+input[type=number]{flex:0 0 64px;text-align:center}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;cursor:pointer;background:var(--brick);color:#fff;font-weight:600}
+button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.one{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--accent-soft)}
+.check{width:34px;height:34px;flex:0 0 34px;border-radius:50%;border:2px solid var(--accent);background:transparent;padding:0;color:var(--card);font-size:18px}
+.check.on{background:var(--accent)}
+.one-text{flex:1;min-width:0;font-weight:600;word-break:break-word}
+.one.done .one-text{text-decoration:line-through;color:var(--muted)}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg);word-break:break-word}
+li span{min-width:0}
+li button{padding:4px 10px;background:transparent;color:var(--muted);font-weight:400}
+.empty{color:var(--muted);font-size:14px}
+.counter{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.big{font-family:var(--display);font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:22px;color:var(--muted)}
+.pm{display:flex;gap:8px}
+.pm button{width:56px;height:56px;font-size:26px;padding:0}
+.hit{color:var(--ok);font-weight:600;font-size:14px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:150px}
+.col{display:flex;flex-direction:column-reverse;gap:3px;align-items:stretch;height:100%}
+.blk{height:12px;border-radius:3px;background:var(--brick);opacity:.85}
+.blk.gold{background:var(--accent);opacity:1}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.days .today{color:var(--ink);font-weight:600}
+.sum{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.sum b{color:var(--ink)}
+details summary{cursor:pointer;color:var(--muted);font-size:14px}
+.note{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.blk{animation:drop .35s ease-out both}@keyframes drop{from{transform:translateY(-8px);opacity:0}}}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header><h1>작은 승리</h1><span class="date" id="date"></span></header>
+
+  <section>
+    <h2>오늘의 1개 · 30분 안에 끝낼 일</h2>
+    <div id="oneBox"></div>
+  </section>
+
+  <section>
+    <h2>오늘 끝낸 것</h2>
+    <form class="row" id="doneForm"><input type="text" id="doneIn" placeholder="예: 견적서 보냄" autocomplete="off"><button>추가</button></form>
+    <ul id="doneList"></ul>
+  </section>
+
+  <section>
+    <h2 id="cLabel">행동 카운터</h2>
+    <div class="counter">
+      <div><div class="big" id="cNum">0<small>/5</small></div><div class="hit" id="cHit"></div></div>
+      <div class="pm"><button class="ghost" id="minus" aria-label="1 빼기">−</button><button id="plus" aria-label="1 더하기">+</button></div>
+    </div>
+    <details><summary>카운터 바꾸기</summary>
+      <div class="row" style="margin-top:8px"><input type="text" id="cName" placeholder="예: 고객 연락"><input type="number" id="cTarget" min="1" max="99"><button id="cSave">저장</button></div>
+    </details>
+  </section>
+
+  <section>
+    <h2>이번 주 쌓인 것</h2>
+    <div class="week" id="week"></div>
+    <div class="days" id="days"></div>
+    <div class="sum"><span>이번 주 <b id="wTotal">0</b>개</span><span>연속 기록 <b id="streak">0</b>일</span></div>
+    <div class="note">금색 블록은 '오늘의 1개'를 끝낸 날입니다.</div>
+  </section>
+  <section>
+    <h2>백업 · 복원</h2>
+    <div class="row"><button id="bk">백업 저장</button><button class="ghost" id="rs">백업에서 복원</button></div>
+    <input type="file" id="rsFile" accept=".json,application/json" hidden>
+    <div class="note">백업 저장 → 공유 메뉴에서 Save to Files → iCloud Drive. 주 1회 권장.</div>
+    <div class="note" id="status"></div>
+  </section>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=key(new Date());
+const blank=()=>({one:{text:'',done:false},done:[],n:0});
+let days={}, settings={name:'고객 연락',target:5};
+
+function lsGet(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+days=lsGet('sw_days',{}); settings=lsGet('sw_set',settings);
+
+const T=()=>days[today]||(days[today]=blank());
+function save(){lsSet('sw_days',days)}
+function saveSet(){lsSet('sw_set',settings)}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderOne(){
+  const t=T(), box=$('oneBox');
+  if(!t.one.text){
+    box.innerHTML=`<form class="row" id="oneForm"><input type="text" id="oneIn" placeholder="오늘 꼭 끝낼 한 가지" autocomplete="off"><button>정하기</button></form>`;
+    $('oneForm').onsubmit=e=>{e.preventDefault();const v=$('oneIn').value.trim();if(!v)return;t.one={text:v,done:false};save(today);render()};
+  }else{
+    box.innerHTML=`<div class="one ${t.one.done?'done':''}"><button class="check ${t.one.done?'on':''}" id="oneChk" aria-label="완료 표시">${t.one.done?'✓':''}</button><div class="one-text">${esc(t.one.text)}</div><button class="ghost" id="oneEdit" style="padding:6px 10px">변경</button></div>`;
+    $('oneChk').onclick=()=>{t.one.done=!t.one.done;save(today);render()};
+    $('oneEdit').onclick=()=>{t.one={text:'',done:false};save(today);render()};
+  }
+}
+function renderDone(){
+  const t=T(), ul=$('doneList');
+  ul.innerHTML=t.done.length?t.done.map((d,i)=>`<li><span>${esc(d)}</span><button data-i="${i}" aria-label="삭제">✕</button></li>`).join(''):`<li class="empty">끝낸 일을 하나씩 적어보세요.</li>`;
+  ul.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.done.splice(+b.dataset.i,1);save(today);render()});
+}
+function renderCounter(){
+  const t=T();
+  $('cLabel').textContent='행동 카운터 · '+settings.name;
+  $('cNum').innerHTML=`${t.n}<small>/${settings.target}</small>`;
+  $('cHit').textContent=t.n>=settings.target?'오늘 목표 달성':'';
+}
+const score=d=>d?(d.one.done?1:0)+d.done.length+(d.n||0):0;
+function renderWeek(){
+  const now=new Date(), dow=(now.getDay()+6)%7, start=new Date(now); start.setDate(now.getDate()-dow);
+  const names=['월','화','수','목','금','토','일']; let w='',dl='',tot=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(start); d.setDate(start.getDate()+i); const k=key(d), x=days[k], s=score(x); tot+=s;
+    let b=''; const shown=Math.min(s,10);
+    for(let j=0;j<shown;j++) b+=`<div class="blk ${j===0&&x&&x.one.done?'gold':''}"></div>`;
+    w+=`<div class="col" title="${k}: ${s}개">${b}</div>`;
+    dl+=`<div class="${k===today?'today':''}">${names[i]}<br>${d.getDate()}</div>`;
+  }
+  $('week').innerHTML=w; $('days').innerHTML=dl; $('wTotal').textContent=tot;
+  let st=0, d=new Date(); if(!score(days[key(d)])) d.setDate(d.getDate()-1);
+  while(score(days[key(d)])>0){st++; d.setDate(d.getDate()-1)}
+  $('streak').textContent=st;
+}
+function render(){renderOne();renderDone();renderCounter();renderWeek()}
+
+$('date').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+$('doneForm').onsubmit=e=>{e.preventDefault();const v=$('doneIn').value.trim();if(!v)return;T().done.push(v);$('doneIn').value='';save(today);render()};
+$('plus').onclick=()=>{T().n++;save(today);render()};
+$('minus').onclick=()=>{const t=T();if(t.n>0){t.n--;save(today);render()}};
+$('cName').value=settings.name; $('cTarget').value=settings.target;
+$('cSave').onclick=()=>{settings.name=$('cName').value.trim()||settings.name;settings.target=Math.max(1,+$('cTarget').value||settings.target);saveSet();render()};
+render();
+
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+$('bk').onclick=async()=>{
+  const json=JSON.stringify({app:'small-wins',v:1,saved:new Date().toISOString(),days,settings});
+  const name='small-wins-backup-'+today+'.json';
+  try{
+    const f=new File([json],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('status').textContent='백업을 내보냈습니다.';return}
+  }catch(e){if(e.name==='AbortError')return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;a.click();
+  $('status').textContent='백업 파일을 저장했습니다.';
+};
+$('rs').onclick=()=>$('rsFile').click();
+$('rsFile').onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{const o=JSON.parse(await f.text()); if(o.app!=='small-wins'||!o.days)throw 0;
+    for(const k in o.days){ if(!days[k]||score(o.days[k])>=score(days[k])) days[k]=o.days[k]; }
+    if(o.settings)settings=o.settings; lsSet('sw_days',days); lsSet('sw_set',settings);
+    $('cName').value=settings.name;$('cTarget').value=settings.target; render();
+    $('status').textContent='복원했습니다 ('+Object.keys(o.days).length+'일치 기록).';
+  }catch(err){$('status').textContent='이 파일은 작은 승리 백업이 아닙니다. 다른 파일을 골라 주세요.'}
+  e.target.value='';
+};
+</script>
+</body></html>
