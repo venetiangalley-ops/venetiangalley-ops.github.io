@@ -19,6 +19,7 @@
   --bg:#12161f;--card:#1b2130;--ink:#e8ebf2;--muted:#98a2b6;--line:#2c3446;
   --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;
   --t-check:#7d9fd6;--t-time:#5cc497;--t-count:#c08ad3;--log:#5d6678;color-scheme:dark}}
+[hidden]{display:none!important}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
@@ -34,6 +35,11 @@ input[type=text],input[type=number]{flex:1;min-width:0;font:inherit;color:var(--
 input[type=number]{flex:0 0 80px;text-align:center}
 button{font:inherit;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--brick);color:#fff;font-weight:600}
 button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+
+.tools{display:flex;gap:8px}
+.tbtn{min-height:42px;min-width:64px;padding:0 14px;font-size:15px;background:transparent;color:var(--brick);border:1.5px solid var(--brick);border-radius:10px}
+.tbtn.add{min-width:84px;background:var(--brick);color:#fff}
+.tbtn:active{opacity:.7}
 button.link{background:transparent;color:var(--brick);padding:4px 6px;font-weight:600;font-size:14px}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .one{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--accent-soft)}
@@ -54,6 +60,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .ctrl button{padding:0;width:44px;height:44px;font-size:15px}
 .yn{width:56px!important;font-size:14px!important}
 .yn.on{background:var(--ok)}
+.carry{display:inline-block;margin-left:6px;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 6px;vertical-align:1px}
 .yn.off{background:transparent;color:var(--muted);border:1px solid var(--line)}
 .del{background:transparent!important;color:var(--muted)!important;border:1px solid var(--line)!important}
 /* add form */
@@ -61,6 +68,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .seg button{background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:10px 4px;font-size:14px}
 .seg button.sel{background:var(--brick);color:#fff;border-color:var(--brick)}
 .hint{font-size:13px;color:var(--muted)}
+#dayTabs button{padding:9px 4px}
 /* log */
 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg);word-break:break-word}
@@ -82,31 +90,41 @@ li button{padding:4px 10px;background:transparent;color:var(--muted);font-weight
 </head><body>
 <div class="wrap">
   <header><h1>작은 승리</h1><span class="date" id="date"></span></header>
+  <div class="seg" id="dayTabs">
+    <button type="button" data-o="-1">어제</button>
+    <button type="button" data-o="0" class="sel">오늘</button>
+    <button type="button" data-o="1">내일</button>
+  </div>
+  <div class="note" id="dayNote" hidden></div>
 
   <section>
-    <div class="sh"><h2>매일 하는 것</h2><div><button class="link" id="editBtn">편집</button><button class="link" id="addBtn">+ 추가</button></div></div>
-    <form id="addForm" hidden style="display:flex;flex-direction:column;gap:8px">
+    <div class="sh"><h2>매일 하는 것</h2><div class="tools"><button class="tbtn" id="editBtn">편집</button><button class="tbtn add" id="addBtn">+ 추가</button></div></div>
+    <form id="addForm" novalidate hidden style="display:flex;flex-direction:column;gap:8px">
       <input type="text" id="aName" placeholder="이름 (예: 영어 공부, 고객 연락)" autocomplete="off">
       <div class="seg" id="aType">
         <button type="button" data-t="check" class="sel">했다 / 안 했다</button>
         <button type="button" data-t="time">몇 시간 했나</button>
         <button type="button" data-t="count">몇 번 했나</button>
       </div>
-      <div class="row" id="aTargetRow" hidden><span class="hint" id="aTargetLabel" style="flex:1">하루 목표</span><input type="number" id="aTarget" min="0.25" max="999" inputmode="decimal"></div>
-      <div class="row"><button type="submit" style="flex:1">만들기</button><button type="button" class="ghost" id="aCancel">취소</button></div>
+      <div class="seg" id="aRep" style="grid-template-columns:repeat(2,1fr)">
+        <button type="button" data-r="daily" class="sel">매일 반복</button>
+        <button type="button" data-r="once">끝낼 때까지 (밀림)</button>
+      </div>
+      <div class="row" id="aTargetRow" hidden><span class="hint" id="aTargetLabel" style="flex:1">하루 목표</span><input type="number" id="aTarget" min="1" max="999" inputmode="decimal"></div>
+      <div class="row"><button type="submit" style="flex:1">만들기</button><button type="button" class="ghost" id="aCancel">닫기</button></div>
     </form>
     <div id="items"></div>
   </section>
 
   <section>
-    <h2>이번 주 쌓인 것</h2>
+    <h2>최근 7일 쌓인 것</h2>
     <div class="week" id="week"></div>
     <div class="days" id="days"></div>
     <div class="legend">
       <span style="--c:var(--t-check)">했다/안 했다</span><span style="--c:var(--t-time)">시간</span><span style="--c:var(--t-count)">횟수</span><span style="--c:var(--log)">기타</span>
     </div>
-    <div class="sum"><span>이번 주 <b id="wTotal">0</b>점</span><span>지난주 <b id="lTotal">0</b>점</span><span>연속 <b id="streak">0</b>일</span></div>
-    <div class="note">항목마다 하루 목표를 채우면 1칸, 덜 하면 그만큼만 쌓입니다. 목표를 넘겨도 1칸이라 많이 한 날보다 꾸준한 주가 높게 나옵니다.</div>
+    <div class="sum"><span>최근 7일 <b id="wTotal">0</b>점</span><span>그 전 7일 <b id="lTotal">0</b>점</span><span>연속 <b id="streak">0</b>일</span></div>
+    <div class="note">항목마다 하루 목표를 채우면 1칸, 덜 하면 그만큼만 쌓입니다. 목표를 넘겨도 1칸이라 많이 한 날보다 꾸준한 한 주가 높게 나옵니다.</div>
   </section>
 
   <section>
@@ -116,10 +134,12 @@ li button{padding:4px 10px;background:transparent;color:var(--muted);font-weight
   </section>
 
   <section>
-    <h2>백업 · 복원</h2>
+    <h2>백업 · 복원 · 초기화</h2>
     <div class="row"><button id="bk">백업 저장</button><button class="ghost" id="rs">백업에서 복원</button></div>
     <input type="file" id="rsFile" accept=".json,application/json" hidden>
     <div class="note">백업 저장 → 공유 메뉴에서 Save to Files → iCloud Drive. 주 1회 권장.</div>
+    <div class="row"><button class="ghost" id="rsToday" style="color:#c0392b;border-color:#c0392b">이 날 초기화</button></div>
+    <div class="note">이 날 초기화: 위에서 고른 날짜에 만든 항목, 입력한 값, 끝낸 일을 지웁니다. 다른 날 기록은 그대로입니다. 두 번 눌러야 실행됩니다.</div>
     <div class="note" id="status"></div>
   </section>
 </div>
@@ -128,12 +148,13 @@ li button{padding:4px 10px;background:transparent;color:var(--muted);font-weight
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-let today=key(new Date());
+let today=key(new Date()), selOff=0, sel=today;
+const selKey=()=>{const d=new Date();d.setDate(d.getDate()+selOff);return key(d)};
 const COLORS={check:'var(--t-check)',time:'var(--t-time)',count:'var(--t-count)'};
 function lsGet(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){$('status').textContent='저장 공간에 쓰지 못했습니다. 백업을 먼저 저장해 두세요.'}}
 
-let days=lsGet('sw_days',{}), items=lsGet('sw_items',null), editing=false, aType='check';
+let days=lsGet('sw_days',{}), items=lsGet('sw_items',null), editing=false, aType='check', aRep='daily';
 // one-time move from v1: old single counter becomes a count item
 const q=h=>Math.round(h*4)/4;
 if(!items){
@@ -148,11 +169,13 @@ if(!lsGet('sw_v3',false)){
   lsSet('sw_items',items); lsSet('sw_days',days); lsSet('sw_v3',true);
 }
 const blank=()=>({v:{},log:[]});
-const T=()=>{const d=days[today]||(days[today]=blank()); d.v=d.v||{}; d.log=d.log||[]; return d};
+const T=()=>{const d=days[sel]||(days[sel]=blank()); d.v=d.v||{}; d.log=d.log||[]; return d};
 const save=()=>lsSet('sw_days',days);
 const saveItems=()=>lsSet('sw_items',items);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const live=()=>items.filter(i=>!i.gone);
+const shownToday=()=>live().filter(i=>!i.once||((i.created||sel)<=sel&&(!i.doneOn||i.doneOn>=sel)));
+const dayDiff=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
 const hr=h=>(h||0).toFixed(2).replace(/\.?0+$/,'')+'시간';
 
 function frac(it,val){
@@ -170,24 +193,25 @@ function dayParts(k){
 const score=k=>dayParts(k).reduce((a,b)=>a+b.h,0);
 
 function renderItems(){
-  const t=T(), box=$('items'), L=live();
+  const t=T(), box=$('items'), L=shownToday();
   if(!L.length){box.innerHTML=`<div class="hint">+ 추가로 매일 확인할 항목을 만드세요. 3~5개가 적당합니다.</div>`;return}
   box.innerHTML=L.map(it=>{
     const v=t.v[it.id]||0, f=frac(it,v);
     let sub,ctrl;
-    if(it.type==='check'){sub=v?'오늘 완료':'아직';ctrl=`<button class="yn ${v?'on':'off'}" data-a="tog" data-id="${it.id}">${v?'했음':'안 함'}</button>`}
+    if(it.type==='check'){const late=it.once&&!v&&it.created<sel?dayDiff(it.created,sel):0;sub=(v?'완료':(it.once?'끝낼 때까지 남음':'아직'))+(late?`<span class="carry">${late}일째 밀림</span>`:'');ctrl=`<button class="yn ${v?'on':'off'}" data-a="tog" data-id="${it.id}">${v?'했음':'안 함'}</button>`}
     else if(it.type==='time'){sub=`${hr(v)} / 목표 ${hr(it.target)}`;ctrl=`<button class="ghost" data-a="sub" data-id="${it.id}" aria-label="15분 빼기">−¼</button><button data-a="add" data-n="0.25" data-id="${it.id}" aria-label="15분 더하기">+¼</button><button data-a="add" data-n="1" data-id="${it.id}" aria-label="1시간 더하기">+1</button>`}
     else{sub=`${v}회 / 목표 ${it.target}회`;ctrl=`<button class="ghost" data-a="sub" data-id="${it.id}" aria-label="1 빼기">−</button><button data-a="add" data-n="1" data-id="${it.id}" aria-label="1 더하기">+</button>`}
+    if(selOff===1&&!editing) ctrl=it.once?'<span class="hint">예약됨</span>':'';
     if(editing) ctrl=`<button class="del" data-a="del" data-id="${it.id}" style="width:auto;padding:0 12px">삭제</button>`;
     const bar=it.type==='check'?'':`<div class="bar"><i style="width:${f*100}%;background:${COLORS[it.type]}"></i></div>`;
-    return `<div class="item"><div class="tag" style="background:${COLORS[it.type]}"></div><div class="meta"><div class="name">${esc(it.name)}</div><div class="sub" ${it.type==='time'&&!editing?`data-a="set" data-id="${it.id}" style="cursor:pointer"`:''}>${sub}${it.type==='time'&&!editing?' · 직접 입력':''}</div>${bar}</div><div class="ctrl">${ctrl}</div></div>`;
+    return `<div class="item"><div class="tag" style="background:${COLORS[it.type]}"></div><div class="meta"><div class="name">${esc(it.name)}</div><div class="sub" ${it.type==='time'&&!editing&&selOff!==1?`data-a="set" data-id="${it.id}" style="cursor:pointer"`:''}>${sub}${it.type==='time'&&!editing&&selOff!==1?' · 직접 입력':''}</div>${bar}</div><div class="ctrl">${ctrl}</div></div>`;
   }).join('');
 }
 $('items').onclick=e=>{
   const b=e.target.closest('[data-a]'); if(!b) return;
   const id=b.dataset.id, it=items.find(i=>i.id===id), t=T(), v=t.v[id]||0;
   const a=b.dataset.a;
-  if(a==='tog') t.v[id]=v?0:1;
+  if(a==='tog'){t.v[id]=v?0:1; if(it.once){ if(!v&&it.doneOn&&it.doneOn!==sel&&days[it.doneOn]) delete days[it.doneOn].v[id]; it.doneOn=v?null:sel; saveItems()}}
   else if(a==='add') t.v[id]=q(v+(+b.dataset.n));
   else if(a==='sub') t.v[id]=Math.max(0,q(v-(it.type==='time'?.25:1)));
   else if(a==='set'){
@@ -207,15 +231,15 @@ function renderLog(){
 }
 
 function renderWeek(){
-  const now=new Date(), dow=(now.getDay()+6)%7, start=new Date(now); start.setDate(now.getDate()-dow);
-  const names=['월','화','수','목','금','토','일'];
+  const now=new Date(), start=new Date(now); start.setDate(now.getDate()-6);
+  const names=['일','월','화','수','목','금','토'];
   const keys=[...Array(7)].map((_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return d});
   const maxH=Math.max(live().length+2,4);
   let w='',dl='',tot=0;
   keys.forEach((d,i)=>{
     const k=key(d), parts=dayParts(k), s=parts.reduce((a,b)=>a+b.h,0); tot+=s;
     w+=`<div class="col" title="${k}: ${s.toFixed(1)}점">${parts.map(p=>`<div class="seg-b" style="background:${p.c};height:${p.h/maxH*100}%"></div>`).join('')}</div>`;
-    dl+=`<div class="${k===today?'today':''}">${names[i]}<br>${d.getDate()}</div>`;
+    dl+=`<div class="${k===sel?'today':''}">${names[d.getDay()]}<br>${d.getDate()}</div>`;
   });
   let last=0; for(let i=1;i<=7;i++){const d=new Date(start);d.setDate(start.getDate()-i);last+=score(key(d))}
   $('week').innerHTML=w;$('days').innerHTML=dl;
@@ -224,23 +248,34 @@ function renderWeek(){
   while(score(key(d))>0){st++;d.setDate(d.getDate()-1)}
   $('streak').textContent=st;
 }
-function render(){today=key(new Date());renderItems();renderLog();renderWeek();$('editBtn').textContent=editing?'완료':'편집'}
+function render(){today=key(new Date());sel=selKey();
+  [...$('dayTabs').children].forEach(b=>b.classList.toggle('sel',+b.dataset.o===selOff));
+  const dn=new Date(sel+'T12:00:00');
+  $('date').textContent=dn.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
+  $('dayNote').hidden=selOff===0;
+  $('dayNote').textContent=selOff===-1?'어제 기록을 입력하는 중입니다.':'내일 할 일을 미리 걸어두는 중입니다. + 추가 → 했다/안 했다 → 끝낼 때까지를 고르면 내일부터 나타납니다. 기록은 내일 하세요.';
+  $('logIn').disabled=selOff===1;renderItems();renderLog();renderWeek();$('editBtn').textContent=editing?'완료':'편집'}
 
 // add item form
 function setType(t){aType=t;[...$('aType').children].forEach(b=>b.classList.toggle('sel',b.dataset.t===t));
-  $('aTargetRow').hidden=t==='check';$('aTargetLabel').textContent=t==='time'?'하루 목표 (시간, 0.25 단위)':'하루 목표 (회)';$('aTarget').value=t==='time'?1:5;$('aTarget').step=t==='time'?'0.25':'1'}
+  $('aRep').hidden=t!=='check';$('aTargetRow').hidden=t==='check';$('aTargetLabel').textContent=t==='time'?'하루 목표 (시간, 0.25 단위)':'하루 목표 (회)';$('aTarget').value=t==='time'?1:5;$('aTarget').step=t==='time'?'0.25':'1';$('aTarget').min=t==='time'?'0.25':'1'}
+function setRep(r){aRep=r;[...$('aRep').children].forEach(b=>b.classList.toggle('sel',b.dataset.r===r))}
+$('aRep').onclick=e=>{const b=e.target.closest('button');if(b)setRep(b.dataset.r)};
 $('aType').onclick=e=>{const b=e.target.closest('button');if(b)setType(b.dataset.t)};
-$('addBtn').onclick=()=>{$('addForm').hidden=!$('addForm').hidden;if(!$('addForm').hidden){setType('check');$('aName').value='';$('aName').focus()}};
+$('addBtn').onclick=()=>{$('addForm').hidden=!$('addForm').hidden;if(!$('addForm').hidden){setType('check');setRep('daily');$('aName').value='';$('aName').focus()}};
 $('aCancel').onclick=()=>{$('addForm').hidden=true};
 $('addForm').onsubmit=e=>{e.preventDefault();const n=$('aName').value.trim();if(!n){$('aName').focus();return}
-  const it={id:'i'+Date.now().toString(36),name:n,type:aType};
+  const it={id:'i'+Date.now().toString(36),name:n,type:aType,created:sel};
+  if(aType==='check'&&aRep==='once'){it.once=true;it.created=sel;it.doneOn=null}
   if(aType==='time'){it.target=Math.max(.25,q(+$('aTarget').value||1));it.unit='h'} else if(aType==='count') it.target=Math.max(1,Math.round(+$('aTarget').value||1));
-  items.push(it);saveItems();$('addForm').hidden=true;render()};
+  items.push(it);saveItems();render();
+  $('aName').value='';$('aTarget').value=aType==='time'?1:5;$('aName').focus();
+  $('status').textContent='';};
 $('editBtn').onclick=()=>{editing=!editing;render()};
 
-$('date').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-$('logForm').onsubmit=e=>{e.preventDefault();const v=$('logIn').value.trim();if(!v)return;T().log.push(v);$('logIn').value='';save();render()};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
+$('dayTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;selOff=+b.dataset.o;editing=false;render()};
+$('logForm').onsubmit=e=>{e.preventDefault();if(selOff===1)return;const v=$('logIn').value.trim();if(!v)return;T().log.push(v);$('logIn').value='';save();render()};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){selOff=0;render()}});
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 
 $('bk').onclick=async()=>{
@@ -253,6 +288,16 @@ $('bk').onclick=async()=>{
   $('status').textContent='백업 파일을 저장했습니다.';
 };
 $('rs').onclick=()=>$('rsFile').click();
+function twoTap(btn,label,run){
+  btn.onclick=()=>{ if(btn.dataset.sure){run();btn.dataset.sure='';btn.textContent=label;return}
+    btn.dataset.sure=1;btn.textContent='한 번 더 누르면 실행';setTimeout(()=>{btn.dataset.sure='';btn.textContent=label},4000) };
+}
+twoTap($('rsToday'),'이 날 초기화',()=>{
+  const n=items.filter(it=>it.created===sel).length;
+  items=items.filter(it=>it.created!==sel);
+  items.forEach(it=>{if(it.once&&it.doneOn===sel)it.doneOn=null});
+  delete days[sel];save();saveItems();render();$('status').textContent='이 날을 초기화했습니다'+(n?` (이 날 만든 항목 ${n}개 포함).`:'.')});
+
 $('rsFile').onchange=async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{const o=JSON.parse(await f.text()); if(o.app!=='small-wins'||!o.days)throw 0;
