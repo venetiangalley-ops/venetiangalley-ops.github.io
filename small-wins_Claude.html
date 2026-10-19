@@ -160,7 +160,7 @@ const COLORS={check:'var(--t-check)',time:'var(--t-time)',count:'var(--t-count)'
 function lsGet(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){$('status').textContent='저장 공간에 쓰지 못했습니다. 백업을 먼저 저장해 두세요.'}}
 
-let aDays=WD.slice();
+let aDays=[1,2,3,4,5,6,0];
 let days=lsGet('sw_days',{}), items=lsGet('sw_items',null), editing=false, aType='check', aRep='daily';
 // one-time move from v1: old single counter becomes a count item
 const q=h=>Math.round(h*4)/4;
