@@ -4,101 +4,117 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="작은 승리">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>작은 승리 기록</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=Do+Hyeon&display=swap">
 <style>
-html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-body{margin:0}
-/* Layout: one narrow column — today's one task, done list, action counter, a week of stacked blocks */
+/* Layout: one column — habit items (check / minutes / count), week of stacked bars, log, backup */
 :root{
-  --bg:#eef0f3; --card:#ffffff; --ink:#1d2433; --muted:#667085; --line:#d8dce4;
-  --accent:#c8862a; --accent-soft:#f5e6cf; --brick:#3b5a8c; --ok:#2f7d5b;
+  --bg:#eef0f3;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#d8dce4;
+  --accent:#c8862a;--accent-soft:#f5e6cf;--brick:#3b5a8c;--ok:#2f7d5b;
+  --t-check:#3b5a8c;--t-time:#2f7d5b;--t-count:#8a4f9e;--log:#9aa3b2;
   --display:"Do Hyeon","IBM Plex Sans KR",system-ui,sans-serif;
   --body:"IBM Plex Sans KR",-apple-system,system-ui,sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme:dark){:root{
   --bg:#12161f;--card:#1b2130;--ink:#e8ebf2;--muted:#98a2b6;--line:#2c3446;
-  --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#12161f;--card:#1b2130;--ink:#e8ebf2;--muted:#98a2b6;--line:#2c3446;
-  --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;color-scheme:dark}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
+  --accent:#e0a54d;--accent-soft:#3a2f1f;--brick:#7d9fd6;--ok:#5cc497;
+  --t-check:#7d9fd6;--t-time:#5cc497;--t-count:#c08ad3;--log:#5d6678;color-scheme:dark}}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
 .wrap{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
-h1{font-family:var(--display);font-weight:400;font-size:30px;margin:0;letter-spacing:.5px}
-.date{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+header{display:flex;justify-content:space-between;align-items:baseline}
+h1{font-family:var(--display);font-weight:400;font-size:30px;margin:0}
+.date{color:var(--muted);font-size:14px}
 section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
-h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+.sh{display:flex;justify-content:space-between;align-items:center}
+h2{font-size:12px;letter-spacing:.12em;color:var(--muted);margin:0;font-weight:600}
 .row{display:flex;gap:8px;align-items:center}
-input[type=text],input[type=number]{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
-input[type=number]{flex:0 0 64px;text-align:center}
-button{font:inherit;border:0;border-radius:10px;padding:11px 14px;cursor:pointer;background:var(--brick);color:#fff;font-weight:600}
+input[type=text],input[type=number]{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+input[type=number]{flex:0 0 80px;text-align:center}
+button{font:inherit;border:0;border-radius:10px;padding:10px 14px;cursor:pointer;background:var(--brick);color:#fff;font-weight:600}
 button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+button.link{background:transparent;color:var(--brick);padding:4px 6px;font-weight:600;font-size:14px}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .one{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:var(--accent-soft)}
 .check{width:34px;height:34px;flex:0 0 34px;border-radius:50%;border:2px solid var(--accent);background:transparent;padding:0;color:var(--card);font-size:18px}
 .check.on{background:var(--accent)}
 .one-text{flex:1;min-width:0;font-weight:600;word-break:break-word}
 .one.done .one-text{text-decoration:line-through;color:var(--muted)}
+/* items */
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-of-type{border-top:0}
+.tag{width:6px;align-self:stretch;border-radius:3px;flex:0 0 6px}
+.meta{flex:1;min-width:0}
+.name{font-weight:600;word-break:break-word}
+.sub{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:5px;border-radius:3px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px}
+.ctrl{display:flex;gap:6px;align-items:center}
+.ctrl button{padding:0;width:44px;height:44px;font-size:15px}
+.yn{width:56px!important;font-size:14px!important}
+.yn.on{background:var(--ok)}
+.yn.off{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.del{background:transparent!important;color:var(--muted)!important;border:1px solid var(--line)!important}
+/* add form */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:10px 4px;font-size:14px}
+.seg button.sel{background:var(--brick);color:#fff;border-color:var(--brick)}
+.hint{font-size:13px;color:var(--muted)}
+/* log */
 ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg);word-break:break-word}
-li span{min-width:0}
 li button{padding:4px 10px;background:transparent;color:var(--muted);font-weight:400}
-.empty{color:var(--muted);font-size:14px}
-.counter{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.big{font-family:var(--display);font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
-.big small{font-size:22px;color:var(--muted)}
-.pm{display:flex;gap:8px}
-.pm button{width:56px;height:56px;font-size:26px;padding:0}
-.hit{color:var(--ok);font-weight:600;font-size:14px}
-.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;height:150px}
-.col{display:flex;flex-direction:column-reverse;gap:3px;align-items:stretch;height:100%}
-.blk{height:12px;border-radius:3px;background:var(--brick);opacity:.85}
-.blk.gold{background:var(--accent);opacity:1}
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);font-size:14px;background:transparent;padding:0}
+/* week */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:160px}
+.col{display:flex;flex-direction:column-reverse;gap:2px;height:100%;justify-content:flex-start}
+.seg-b{border-radius:3px;min-height:2px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .days .today{color:var(--ink);font-weight:600}
-.sum{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.pct{font-size:11px;color:var(--muted);text-align:center;font-variant-numeric:tabular-nums}
+.sum{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);gap:8px;flex-wrap:wrap}
 .sum b{color:var(--ink)}
-details summary{cursor:pointer;color:var(--muted);font-size:14px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}
 .note{font-size:12px;color:var(--muted)}
-@media (prefers-reduced-motion:no-preference){.blk{animation:drop .35s ease-out both}@keyframes drop{from{transform:translateY(-8px);opacity:0}}}
 </style>
 </head><body>
-
 <div class="wrap">
   <header><h1>작은 승리</h1><span class="date" id="date"></span></header>
 
   <section>
-    <h2>오늘의 1개 · 30분 안에 끝낼 일</h2>
-    <div id="oneBox"></div>
-  </section>
-
-  <section>
-    <h2>오늘 끝낸 것</h2>
-    <form class="row" id="doneForm"><input type="text" id="doneIn" placeholder="예: 견적서 보냄" autocomplete="off"><button>추가</button></form>
-    <ul id="doneList"></ul>
-  </section>
-
-  <section>
-    <h2 id="cLabel">행동 카운터</h2>
-    <div class="counter">
-      <div><div class="big" id="cNum">0<small>/5</small></div><div class="hit" id="cHit"></div></div>
-      <div class="pm"><button class="ghost" id="minus" aria-label="1 빼기">−</button><button id="plus" aria-label="1 더하기">+</button></div>
-    </div>
-    <details><summary>카운터 바꾸기</summary>
-      <div class="row" style="margin-top:8px"><input type="text" id="cName" placeholder="예: 고객 연락"><input type="number" id="cTarget" min="1" max="99"><button id="cSave">저장</button></div>
-    </details>
+    <div class="sh"><h2>매일 하는 것</h2><div><button class="link" id="editBtn">편집</button><button class="link" id="addBtn">+ 추가</button></div></div>
+    <form id="addForm" hidden style="display:flex;flex-direction:column;gap:8px">
+      <input type="text" id="aName" placeholder="이름 (예: 영어 공부, 고객 연락)" autocomplete="off">
+      <div class="seg" id="aType">
+        <button type="button" data-t="check" class="sel">했다 / 안 했다</button>
+        <button type="button" data-t="time">몇 시간 했나</button>
+        <button type="button" data-t="count">몇 번 했나</button>
+      </div>
+      <div class="row" id="aTargetRow" hidden><span class="hint" id="aTargetLabel" style="flex:1">하루 목표</span><input type="number" id="aTarget" min="0.25" max="999" inputmode="decimal"></div>
+      <div class="row"><button type="submit" style="flex:1">만들기</button><button type="button" class="ghost" id="aCancel">취소</button></div>
+    </form>
+    <div id="items"></div>
   </section>
 
   <section>
     <h2>이번 주 쌓인 것</h2>
     <div class="week" id="week"></div>
     <div class="days" id="days"></div>
-    <div class="sum"><span>이번 주 <b id="wTotal">0</b>개</span><span>연속 기록 <b id="streak">0</b>일</span></div>
-    <div class="note">금색 블록은 '오늘의 1개'를 끝낸 날입니다.</div>
+    <div class="legend">
+      <span style="--c:var(--t-check)">했다/안 했다</span><span style="--c:var(--t-time)">시간</span><span style="--c:var(--t-count)">횟수</span><span style="--c:var(--log)">기타</span>
+    </div>
+    <div class="sum"><span>이번 주 <b id="wTotal">0</b>점</span><span>지난주 <b id="lTotal">0</b>점</span><span>연속 <b id="streak">0</b>일</span></div>
+    <div class="note">항목마다 하루 목표를 채우면 1칸, 덜 하면 그만큼만 쌓입니다. 목표를 넘겨도 1칸이라 많이 한 날보다 꾸준한 주가 높게 나옵니다.</div>
   </section>
+
+  <section>
+    <h2>그 밖에 끝낸 것</h2>
+    <form class="row" id="logForm"><input type="text" id="logIn" placeholder="예: 견적서 보냄" autocomplete="off"><button>추가</button></form>
+    <ul id="logList"></ul>
+  </section>
+
   <section>
     <h2>백업 · 복원</h2>
     <div class="row"><button id="bk">백업 저장</button><button class="ghost" id="rs">백업에서 복원</button></div>
@@ -112,73 +128,125 @@ details summary{cursor:pointer;color:var(--muted);font-size:14px}
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const today=key(new Date());
-const blank=()=>({one:{text:'',done:false},done:[],n:0});
-let days={}, settings={name:'고객 연락',target:5};
+let today=key(new Date());
+const COLORS={check:'var(--t-check)',time:'var(--t-time)',count:'var(--t-count)'};
+function lsGet(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v??d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){$('status').textContent='저장 공간에 쓰지 못했습니다. 백업을 먼저 저장해 두세요.'}}
 
-function lsGet(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-days=lsGet('sw_days',{}); settings=lsGet('sw_set',settings);
-
-const T=()=>days[today]||(days[today]=blank());
-function save(){lsSet('sw_days',days)}
-function saveSet(){lsSet('sw_set',settings)}
+let days=lsGet('sw_days',{}), items=lsGet('sw_items',null), editing=false, aType='check';
+// one-time move from v1: old single counter becomes a count item
+const q=h=>Math.round(h*4)/4;
+if(!items){
+  items=[];
+  for(const k in days){const d=days[k]; d.v=d.v||{}; delete d.n; d.log=d.log||d.done||[]; delete d.done}
+}
+if(!lsGet('sw_v3',false)){
+  items=items.filter(i=>i.id!=='c1');
+  items.forEach(it=>{if(it.type==='time'&&it.unit!=='h'){it.target=Math.max(.25,q(it.target/60));it.unit='h';
+    for(const k in days){const v=(days[k].v||{})[it.id]; if(v) days[k].v[it.id]=q(v/60)}}});
+  for(const k in days) delete days[k].one;
+  lsSet('sw_items',items); lsSet('sw_days',days); lsSet('sw_v3',true);
+}
+const blank=()=>({v:{},log:[]});
+const T=()=>{const d=days[today]||(days[today]=blank()); d.v=d.v||{}; d.log=d.log||[]; return d};
+const save=()=>lsSet('sw_days',days);
+const saveItems=()=>lsSet('sw_items',items);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const live=()=>items.filter(i=>!i.gone);
+const hr=h=>(h||0).toFixed(2).replace(/\.?0+$/,'')+'시간';
 
-function renderOne(){
-  const t=T(), box=$('oneBox');
-  if(!t.one.text){
-    box.innerHTML=`<form class="row" id="oneForm"><input type="text" id="oneIn" placeholder="오늘 꼭 끝낼 한 가지" autocomplete="off"><button>정하기</button></form>`;
-    $('oneForm').onsubmit=e=>{e.preventDefault();const v=$('oneIn').value.trim();if(!v)return;t.one={text:v,done:false};save(today);render()};
-  }else{
-    box.innerHTML=`<div class="one ${t.one.done?'done':''}"><button class="check ${t.one.done?'on':''}" id="oneChk" aria-label="완료 표시">${t.one.done?'✓':''}</button><div class="one-text">${esc(t.one.text)}</div><button class="ghost" id="oneEdit" style="padding:6px 10px">변경</button></div>`;
-    $('oneChk').onclick=()=>{t.one.done=!t.one.done;save(today);render()};
-    $('oneEdit').onclick=()=>{t.one={text:'',done:false};save(today);render()};
+function frac(it,val){
+  if(!val) return 0;
+  if(it.type==='check') return val?1:0;
+  return Math.min(val/(it.target||1),1);
+}
+function dayParts(k){
+  const d=days[k]; if(!d) return [];
+  const p=[];
+  items.forEach(it=>{const f=frac(it,(d.v||{})[it.id]); if(f>0) p.push({c:COLORS[it.type],h:f})});
+  const n=(d.log||[]).length; if(n) p.push({c:'var(--log)',h:Math.min(n*0.5,2)});
+  return p;
+}
+const score=k=>dayParts(k).reduce((a,b)=>a+b.h,0);
+
+function renderItems(){
+  const t=T(), box=$('items'), L=live();
+  if(!L.length){box.innerHTML=`<div class="hint">+ 추가로 매일 확인할 항목을 만드세요. 3~5개가 적당합니다.</div>`;return}
+  box.innerHTML=L.map(it=>{
+    const v=t.v[it.id]||0, f=frac(it,v);
+    let sub,ctrl;
+    if(it.type==='check'){sub=v?'오늘 완료':'아직';ctrl=`<button class="yn ${v?'on':'off'}" data-a="tog" data-id="${it.id}">${v?'했음':'안 함'}</button>`}
+    else if(it.type==='time'){sub=`${hr(v)} / 목표 ${hr(it.target)}`;ctrl=`<button class="ghost" data-a="sub" data-id="${it.id}" aria-label="15분 빼기">−¼</button><button data-a="add" data-n="0.25" data-id="${it.id}" aria-label="15분 더하기">+¼</button><button data-a="add" data-n="1" data-id="${it.id}" aria-label="1시간 더하기">+1</button>`}
+    else{sub=`${v}회 / 목표 ${it.target}회`;ctrl=`<button class="ghost" data-a="sub" data-id="${it.id}" aria-label="1 빼기">−</button><button data-a="add" data-n="1" data-id="${it.id}" aria-label="1 더하기">+</button>`}
+    if(editing) ctrl=`<button class="del" data-a="del" data-id="${it.id}" style="width:auto;padding:0 12px">삭제</button>`;
+    const bar=it.type==='check'?'':`<div class="bar"><i style="width:${f*100}%;background:${COLORS[it.type]}"></i></div>`;
+    return `<div class="item"><div class="tag" style="background:${COLORS[it.type]}"></div><div class="meta"><div class="name">${esc(it.name)}</div><div class="sub" ${it.type==='time'&&!editing?`data-a="set" data-id="${it.id}" style="cursor:pointer"`:''}>${sub}${it.type==='time'&&!editing?' · 직접 입력':''}</div>${bar}</div><div class="ctrl">${ctrl}</div></div>`;
+  }).join('');
+}
+$('items').onclick=e=>{
+  const b=e.target.closest('[data-a]'); if(!b) return;
+  const id=b.dataset.id, it=items.find(i=>i.id===id), t=T(), v=t.v[id]||0;
+  const a=b.dataset.a;
+  if(a==='tog') t.v[id]=v?0:1;
+  else if(a==='add') t.v[id]=q(v+(+b.dataset.n));
+  else if(a==='sub') t.v[id]=Math.max(0,q(v-(it.type==='time'?.25:1)));
+  else if(a==='set'){
+    const sub=b; sub.innerHTML=`<span class="row" style="margin-top:4px"><input type="number" id="setMin" min="0" max="24" step="0.25" inputmode="decimal" value="${v}" style="flex:0 0 90px"><button type="button" id="setOk" style="padding:8px 12px">시간 저장</button></span>`;
+    sub.removeAttribute('data-a'); $('setMin').focus(); $('setMin').select();
+    $('setOk').onclick=ev=>{ev.stopPropagation();t.v[id]=Math.max(0,q(+$('setMin').value||0));save();render()};
+    return;
   }
+  else if(a==='del'){ if(b.dataset.sure){it.gone=true;saveItems();render();return} b.dataset.sure=1;b.textContent='정말 삭제';return }
+  save(); render();
+};
+
+function renderLog(){
+  const t=T(), ul=$('logList');
+  ul.innerHTML=t.log.length?t.log.map((d,i)=>`<li><span>${esc(d)}</span><button data-i="${i}" aria-label="삭제">✕</button></li>`).join(''):`<li class="empty">목록에 없는 일을 끝냈을 때 적어두세요.</li>`;
+  ul.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.log.splice(+b.dataset.i,1);save();render()});
 }
-function renderDone(){
-  const t=T(), ul=$('doneList');
-  ul.innerHTML=t.done.length?t.done.map((d,i)=>`<li><span>${esc(d)}</span><button data-i="${i}" aria-label="삭제">✕</button></li>`).join(''):`<li class="empty">끝낸 일을 하나씩 적어보세요.</li>`;
-  ul.querySelectorAll('button').forEach(b=>b.onclick=()=>{t.done.splice(+b.dataset.i,1);save(today);render()});
-}
-function renderCounter(){
-  const t=T();
-  $('cLabel').textContent='행동 카운터 · '+settings.name;
-  $('cNum').innerHTML=`${t.n}<small>/${settings.target}</small>`;
-  $('cHit').textContent=t.n>=settings.target?'오늘 목표 달성':'';
-}
-const score=d=>d?(d.one.done?1:0)+d.done.length+(d.n||0):0;
+
 function renderWeek(){
   const now=new Date(), dow=(now.getDay()+6)%7, start=new Date(now); start.setDate(now.getDate()-dow);
-  const names=['월','화','수','목','금','토','일']; let w='',dl='',tot=0;
-  for(let i=0;i<7;i++){
-    const d=new Date(start); d.setDate(start.getDate()+i); const k=key(d), x=days[k], s=score(x); tot+=s;
-    let b=''; const shown=Math.min(s,10);
-    for(let j=0;j<shown;j++) b+=`<div class="blk ${j===0&&x&&x.one.done?'gold':''}"></div>`;
-    w+=`<div class="col" title="${k}: ${s}개">${b}</div>`;
+  const names=['월','화','수','목','금','토','일'];
+  const keys=[...Array(7)].map((_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return d});
+  const maxH=Math.max(live().length+2,4);
+  let w='',dl='',tot=0;
+  keys.forEach((d,i)=>{
+    const k=key(d), parts=dayParts(k), s=parts.reduce((a,b)=>a+b.h,0); tot+=s;
+    w+=`<div class="col" title="${k}: ${s.toFixed(1)}점">${parts.map(p=>`<div class="seg-b" style="background:${p.c};height:${p.h/maxH*100}%"></div>`).join('')}</div>`;
     dl+=`<div class="${k===today?'today':''}">${names[i]}<br>${d.getDate()}</div>`;
-  }
-  $('week').innerHTML=w; $('days').innerHTML=dl; $('wTotal').textContent=tot;
-  let st=0, d=new Date(); if(!score(days[key(d)])) d.setDate(d.getDate()-1);
-  while(score(days[key(d)])>0){st++; d.setDate(d.getDate()-1)}
+  });
+  let last=0; for(let i=1;i<=7;i++){const d=new Date(start);d.setDate(start.getDate()-i);last+=score(key(d))}
+  $('week').innerHTML=w;$('days').innerHTML=dl;
+  $('wTotal').textContent=tot.toFixed(1).replace(/\.0$/,'');$('lTotal').textContent=last.toFixed(1).replace(/\.0$/,'');
+  let st=0,d=new Date(); if(!score(key(d))) d.setDate(d.getDate()-1);
+  while(score(key(d))>0){st++;d.setDate(d.getDate()-1)}
   $('streak').textContent=st;
 }
-function render(){renderOne();renderDone();renderCounter();renderWeek()}
+function render(){today=key(new Date());renderItems();renderLog();renderWeek();$('editBtn').textContent=editing?'완료':'편집'}
+
+// add item form
+function setType(t){aType=t;[...$('aType').children].forEach(b=>b.classList.toggle('sel',b.dataset.t===t));
+  $('aTargetRow').hidden=t==='check';$('aTargetLabel').textContent=t==='time'?'하루 목표 (시간, 0.25 단위)':'하루 목표 (회)';$('aTarget').value=t==='time'?1:5;$('aTarget').step=t==='time'?'0.25':'1'}
+$('aType').onclick=e=>{const b=e.target.closest('button');if(b)setType(b.dataset.t)};
+$('addBtn').onclick=()=>{$('addForm').hidden=!$('addForm').hidden;if(!$('addForm').hidden){setType('check');$('aName').value='';$('aName').focus()}};
+$('aCancel').onclick=()=>{$('addForm').hidden=true};
+$('addForm').onsubmit=e=>{e.preventDefault();const n=$('aName').value.trim();if(!n){$('aName').focus();return}
+  const it={id:'i'+Date.now().toString(36),name:n,type:aType};
+  if(aType==='time'){it.target=Math.max(.25,q(+$('aTarget').value||1));it.unit='h'} else if(aType==='count') it.target=Math.max(1,Math.round(+$('aTarget').value||1));
+  items.push(it);saveItems();$('addForm').hidden=true;render()};
+$('editBtn').onclick=()=>{editing=!editing;render()};
 
 $('date').textContent=new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});
-$('doneForm').onsubmit=e=>{e.preventDefault();const v=$('doneIn').value.trim();if(!v)return;T().done.push(v);$('doneIn').value='';save(today);render()};
-$('plus').onclick=()=>{T().n++;save(today);render()};
-$('minus').onclick=()=>{const t=T();if(t.n>0){t.n--;save(today);render()}};
-$('cName').value=settings.name; $('cTarget').value=settings.target;
-$('cSave').onclick=()=>{settings.name=$('cName').value.trim()||settings.name;settings.target=Math.max(1,+$('cTarget').value||settings.target);saveSet();render()};
-render();
-
+$('logForm').onsubmit=e=>{e.preventDefault();const v=$('logIn').value.trim();if(!v)return;T().log.push(v);$('logIn').value='';save();render()};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
 $('bk').onclick=async()=>{
-  const json=JSON.stringify({app:'small-wins',v:1,saved:new Date().toISOString(),days,settings});
+  const json=JSON.stringify({app:'small-wins',v:3,saved:new Date().toISOString(),days,items});
   const name='small-wins-backup-'+today+'.json';
-  try{
-    const f=new File([json],name,{type:'application/json'});
+  try{const f=new File([json],name,{type:'application/json'});
     if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});$('status').textContent='백업을 내보냈습니다.';return}
   }catch(e){if(e.name==='AbortError')return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;a.click();
@@ -188,12 +256,14 @@ $('rs').onclick=()=>$('rsFile').click();
 $('rsFile').onchange=async e=>{
   const f=e.target.files[0]; if(!f)return;
   try{const o=JSON.parse(await f.text()); if(o.app!=='small-wins'||!o.days)throw 0;
-    for(const k in o.days){ if(!days[k]||score(o.days[k])>=score(days[k])) days[k]=o.days[k]; }
-    if(o.settings)settings=o.settings; lsSet('sw_days',days); lsSet('sw_set',settings);
-    $('cName').value=settings.name;$('cTarget').value=settings.target; render();
+    if(o.items){o.items.forEach(it=>{if(!items.find(x=>x.id===it.id))items.push(it)})}
+    for(const k in o.days){const d=o.days[k]; d.v=d.v||{}; delete d.n; delete d.one; d.log=d.log||d.done||[]; delete d.done;
+      if(!days[k]||score(k)===0) days[k]=d; }
+    save();saveItems();render();
     $('status').textContent='복원했습니다 ('+Object.keys(o.days).length+'일치 기록).';
   }catch(err){$('status').textContent='이 파일은 작은 승리 백업이 아닙니다. 다른 파일을 골라 주세요.'}
   e.target.value='';
 };
+render();
 </script>
 </body></html>
